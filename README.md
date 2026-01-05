@@ -18,8 +18,9 @@
 * 생활기록부를 예시로 하자면 성적이 바로 정형 데이터의 예시라 할 수 있습니다.
 * 저희는 교과 수업에서 많은 정형 데이터를 다루는데 이와 관련해
 * 1) 강원도 시군구별 인구 데이터와 2) 구글 Gemini를 활용한 애니메이션 시각화
-* 2) 위도 경도 정보를 포함한 위치 데이터와 2) 구글 Gemini를 활용한 지도 시각화
-* 의 실습을 진행해보겠습니다.
+  - 인구파일 출처 : https://kosis.kr/statHtml/statHtml.do?sso=ok&returnurl=https%3A%2F%2Fkosis.kr%3A443%2FstatHtml%2FstatHtml.do%3FtblId%3DDT_1B040A3%26orgId%3D101%26
+  - 인구 파일 전처리 ChatGPT : https://chatgpt.com/share/68fbef7c-40d0-8001-9beb-b96c374dc35d
+  - 인구 파일 시각화 과정 : https://gemini.google.com/share/701bd385f86f
 * 정형 데이터 시각화 예시(데이터 다람쥐) : https://www.youtube.com/@DataSquirrel
 * 정형 데이터 시각화 예시(그래프로 보는 세상) : https://www.youtube.com/@on24
 * 정형 데이터 시각화 간단 파이선 툴 : https://colab.research.google.com/drive/1hBd9r1xlvCL_BNjJ5aU3sF9GxZ5vMX-b#scrollTo=6PIS2dCapXEC
