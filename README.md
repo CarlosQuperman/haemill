@@ -1,7 +1,17 @@
 # haemill
 2025~2026 찾아가는 학교 컨설팅 해밀학교(AI 융합 수업)
 
-## 1) 정형 데이터의 시각화
+## 0) 데이터 수집처 및 기타 정보
+
+* 공공데이터 포털 (https://open.neis.go.kr/portal/mainPage.do)
+* 캐글 (https://www.kaggle.com/datasets) 케이팝 데이터 : https://www.kaggle.com/datasets/romainfonta2/kpop-song-rankings
+* 데이콘 : https://dacon.io/competitions
+* 나이스 교육정보 개방포털 : https://open.neis.go.kr/portal/mainPage.do
+* AI 허브 : https://aihub.or.kr/
+* 2022 개정 교육과정 중학교 수학 성취기준 : https://namu.wiki/w/2022%20%EA%B0%9C%EC%A0%95%20%EA%B5%90%EC%9C%A1%EA%B3%BC%EC%A0%95/%EC%88%98%ED%95%99%EA%B3%BC/%EC%A4%91%ED%95%99%EA%B5%90
+* 2022 개정 교육과정 중학교 국어 성취기준 : https://namu.wiki/w/2022%20%EA%B0%9C%EC%A0%95%20%EA%B5%90%EC%9C%A1%EA%B3%BC%EC%A0%95/%EA%B5%AD%EC%96%B4%EA%B3%BC
+
+## 1) 정형 데이터의 시각화 (제미나이 캔버스를 활용해서)
 
 * 정형 데이터는 형식이 정해져 있는 데이터를 의미합니다.
 * 표 형태의 데이터가 바로 정형테이터의 대표적 예시이며
@@ -9,9 +19,11 @@
 * 저희는 교과 수업에서 많은 정형 데이터를 다루는데
 * 간단한 Python 기반 프로그램을 통해 애니메이션 시각화의 활용 사례와 활용 방법을 논의해보겠습니다!
 * 정형 데이터 시각화 예시(데이터 다람쥐) : https://www.youtube.com/@DataSquirrel
+* 정형 데이터 시각화 예시(그래프로 보는 세상) : https://www.youtube.com/@on24
 * 정형 데이터 시각화 간단 파이선 툴 : https://colab.research.google.com/drive/1hBd9r1xlvCL_BNjJ5aU3sF9GxZ5vMX-b#scrollTo=6PIS2dCapXEC
+* 제미나이 캔버스를 활용한 일본 애니메이션 사회적 분석 사이트
 
-## 2) 비정형 데이터의 시각화
+## 2  비정형 데이터의 시각화 (의미를 이해하는 LLM)
 
 * 비정형 데이터는 형식이 정해져 있지 않은 데이터를 의미합니다.
 * 텍스트, 이미지, 동영상 등의 데이터가 바로 비정형데이터의 대표적 예시이며
