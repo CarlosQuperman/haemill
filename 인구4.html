@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>강원도 인구 분석 - 고정밀 데이터 엔진</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&family=Pretendard:wght@400;700;900&display=swap');
+        
+        :root {
+            --bg-yellow: #FEF08A;
+            --neo-blue: #3B82F6;
+            --neo-pink: #F472B6;
+            --neo-green: #4ADE80;
+            --neo-orange: #FB923C;
+            --black: #000000;
+        }
+
+        body { 
+            font-family: 'Public Sans', 'Pretendard', sans-serif; 
+            background-color: var(--bg-yellow); 
+            color: var(--black); 
+            padding: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .neo-box {
+            background: white;
+            border: 4px solid var(--black);
+            box-shadow: 6px 6px 0px 0px var(--black);
+        }
+
+        .neo-btn {
+            background: var(--neo-blue);
+            border: 3px solid var(--black);
+            box-shadow: 4px 4px 0px 0px var(--black);
+            font-weight: 900;
+            color: white;
+            transition: all 0.1s;
+        }
+
+        .neo-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px 0px var(--black);
+        }
+
+        .canvas-container { position: relative; width: 100%; height: 450px; }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 10px;
+            border: 2px solid black;
+            background: white;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            background: var(--neo-pink);
+            border: 2px solid black;
+            margin-top: -7px;
+            box-shadow: 2px 2px 0px black;
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-7xl mx-auto">
+        <!-- 상단 헤더 및 파일 업로드 -->
+        <header class="mb-8 flex flex-col md:flex-row items-stretch gap-4">
+            <div class="neo-box p-4 bg-white flex-grow">
+                <h1 class="text-3xl font-black uppercase tracking-tight">
+                    GANGWON <span class="bg-blue-400 px-2 italic">STATS</span> 2008-2024
+                </h1>
+                <div class="mt-2 flex items-center gap-4">
+                    <input type="file" id="csv-file" accept=".csv" class="text-xs font-bold file:neo-btn file:bg-orange-400 file:px-3 file:py-1 file:mr-4 cursor-pointer">
+                    <span class="text-xs font-bold bg-black text-white px-2 py-1 uppercase" id="encoding-tag">No File</span>
+                </div>
+            </div>
+            
+            <div class="neo-box p-4 bg-white flex items-center justify-center min-w-[180px]">
+                <span class="font-black text-5xl italic tracking-tighter" id="year-display">----</span>
+            </div>
+        </header>
+
+        <!-- 핵심 지표 요약 (Max, Min, Avg) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="neo-box p-5 bg-green-400 relative overflow-hidden">
+                <div class="relative z-10">
+                    <p class="text-xs font-black uppercase opacity-80">인구 최다 지역 (Max)</p>
+                    <h3 id="stat-max-name" class="text-xl font-black mt-1">---</h3>
+                    <p id="stat-max-value" class="text-2xl font-black tracking-tighter">0</p>
+                </div>
+                <div class="absolute right-[-10px] bottom-[-10px] text-6xl opacity-20 font-black italic">MAX</div>
+            </div>
+            <div class="neo-box p-5 bg-pink-400 relative overflow-hidden">
+                <div class="relative z-10">
+                    <p class="text-xs font-black uppercase opacity-80">인구 최소 지역 (Min)</p>
+                    <h3 id="stat-min-name" class="text-xl font-black mt-1">---</h3>
+                    <p id="stat-min-value" class="text-2xl font-black tracking-tighter">0</p>
+                </div>
+                <div class="absolute right-[-10px] bottom-[-10px] text-6xl opacity-20 font-black italic">MIN</div>
+            </div>
+            <div class="neo-box p-5 bg-blue-300 relative overflow-hidden">
+                <div class="relative z-10">
+                    <p class="text-xs font-black uppercase opacity-80">강원도 지역 평균 (Avg)</p>
+                    <h3 class="text-xl font-black mt-1">평균 인구수</h3>
+                    <p id="stat-avg-value" class="text-2xl font-black tracking-tighter">0</p>
+                </div>
+                <div class="absolute right-[-10px] bottom-[-10px] text-6xl opacity-20 font-black italic">AVG</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- 메인 차트 영역 -->
+            <div class="lg:col-span-3 neo-box p-6 bg-white relative">
+                <div id="welcome-msg" class="absolute inset-0 flex items-center justify-center z-20 bg-white/90">
+                    <div class="text-center p-8 border-4 border-black neo-box bg-yellow-200 rotate-[-1deg]">
+                        <p class="text-2xl font-black uppercase">파일 분석 준비 완료</p>
+                        <p class="font-bold mt-2">CSV 파일을 업로드하면 분석이 시작됩니다.</p>
+                    </div>
+                </div>
+                
+                <div class="canvas-container" id="container">
+                    <canvas id="popChart"></canvas>
+                </div>
+
+                <div class="mt-6 pt-4 border-t-4 border-black flex flex-col md:flex-row items-center gap-4">
+                    <button id="play-btn" class="neo-btn w-12 h-12 flex items-center justify-center text-xl">▶</button>
+                    <div class="flex-grow w-full">
+                        <input type="range" id="year-range" min="2008" max="2024" step="1" value="2008" class="w-full">
+                        <div class="flex justify-between font-black text-[10px] mt-1 italic uppercase" id="year-labels">
+                            <span>시작 연도</span><span>종료 연도</span>
+                        </div>
+                    </div>
+                    <div class="neo-box p-2 bg-orange-200 min-w-[100px]">
+                        <label class="block text-[8px] font-black uppercase text-center">재생 속도</label>
+                        <input type="range" id="speed-range" min="100" max="1500" step="50" value="1000" class="w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사이드바 정보 -->
+            <div class="flex flex-col gap-4">
+                <div class="neo-box p-4 bg-white">
+                    <h2 class="text-sm font-black mb-3 border-b-2 border-black pb-1 uppercase italic">Total Summary</h2>
+                    <div id="total-summary" class="space-y-3 font-bold text-sm">
+                        <div class="flex justify-between"><span>도합 인구:</span><span id="sum-pop">-</span></div>
+                        <div class="flex justify-between"><span>도합 세대:</span><span id="sum-house">-</span></div>
+                        <div class="flex justify-between"><span>성비(남/여):</span><span id="avg-sex">-</span></div>
+                    </div>
+                </div>
+
+                <div class="neo-box p-4 bg-orange-400 flex-grow">
+                    <h3 class="text-sm font-black mb-2 uppercase italic border-b-2 border-black/20 pb-1">Data Insight</h3>
+                    <div id="teacher-comment" class="text-xs font-bold leading-relaxed">
+                        파일을 업로드하면 인구 통계 정보와 수학적 분석 결과가 이곳에 표시됩니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const regionEmblemsLinks = {
+            "원주시": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Flag_of_Wonju.svg/300px-Flag_of_Wonju.svg.png",
+            "춘천시": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Flag_of_Chuncheon.svg/300px-Flag_of_Chuncheon.svg.png",
+            "강릉시": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Flag_of_Gangneung.svg/300px-Flag_of_Gangneung.svg.png",
+            "동해시": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Flag_of_Donghae.svg/300px-Flag_of_Donghae.svg.png",
+            "속초시": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Flag_of_Sokcho.svg/300px-Flag_of_Sokcho.svg.png",
+            "삼척시": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Flag_of_Samcheok.svg/300px-Flag_of_Samcheok.svg.png",
+            "홍천군": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Flag_of_Hongcheon.svg/300px-Flag_of_Hongcheon.svg.png",
+            "태백시": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Flag_of_Taebaek.svg/300px-Flag_of_Taebaek.svg.png",
+            "횡성군": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Flag_of_Hoengseong.svg/300px-Flag_of_Hoengseong.svg.png",
+            "철원군": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Flag_of_Cheorwon.svg/300px-Flag_of_Cheorwon.svg.png",
+            "평창군": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Flag_of_Pyeongchang.svg/300px-Flag_of_Pyeongchang.svg.png",
+            "영월군": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Flag_of_Yeongwol.svg/300px-Flag_of_Yeongwol.svg.png",
+            "정선군": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Flag_of_Jeongseon.svg/300px-Flag_of_Jeongseon.svg.png",
+            "고성군": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Flag_of_Goseong%2C_Gangwon.svg/300px-Flag_of_Goseong%2C_Gangwon.svg.png",
+            "양양군": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Flag_of_Yangyang.svg/300px-Flag_of_Yangyang.svg.png",
+            "화천군": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Flag_of_Hwacheon.svg/300px-Flag_of_Hwacheon.svg.png",
+            "양구군": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Flag_of_Yanggu.svg/300px-Flag_of_Yanggu.svg.png",
+            "인제군": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Flag_of_Inje.svg/300px-Flag_of_Inje.svg.png"
+        };
+
+        const imageCache = {};
+        let populationData = {};
+        let availableYears = [];
+        let currentYear = 2008;
+        let isPlaying = false;
+        let animationTimer;
+
+        const canvas = document.getElementById('popChart');
+        const ctx = canvas.getContext('2d');
+        const encodingTag = document.getElementById('encoding-tag');
+
+        function preloadImages() {
+            Object.keys(regionEmblemsLinks).forEach(name => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.src = regionEmblemsLinks[name];
+                img.onload = () => imageCache[name] = img;
+            });
+        }
+
+        // FileReader를 이용한 파일 읽기 (UTF-8 시도 -> 실패시 EUC-KR)
+        function readCSV(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                // '행정구역'이라는 핵심 키워드가 깨져있다면 인코딩이 맞지 않는 것
+                if (!content.includes('행정구역')) {
+                    console.log("UTF-8 읽기 실패. EUC-KR로 재시도합니다.");
+                    readCSVWithEncoding(file, 'EUC-KR');
+                } else {
+                    document.getElementById('encoding-tag').innerText = "UTF-8";
+                    processCSV(content);
+                }
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function readCSVWithEncoding(file, encoding) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                document.getElementById('encoding-tag').innerText = encoding;
+                processCSV(content);
+            };
+            reader.readAsText(file, encoding);
+        }
+
+        document.getElementById('csv-file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            readCSV(file);
+        });
+
+        function processCSV(csvText) {
+            const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length < 2) return;
+
+            const rawData = {};
+            const IDX = { REGION: 0, YEAR: 1, POP: 2, HOUSE: 3, PER_HOUSE: 4, MALE: 5, FEMALE: 6, RATIO: 7 };
+
+            lines.slice(1).forEach(line => {
+                const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+                if (cols.length < 3) return;
+
+                const region = cols[IDX.REGION];
+                // 요약 행 필터링
+                if (region.includes('계') || region === '강원도' || region === '') return;
+
+                // 연도 추출
+                const yearMatch = cols[IDX.YEAR].match(/\d{4}/);
+                if (!yearMatch) return;
+                const year = yearMatch[0];
+
+                const record = {
+                    name: region,
+                    pop: parseInt(cols[IDX.POP]?.replace(/[^0-9]/g, '')) || 0,
+                    house: parseInt(cols[IDX.HOUSE]?.replace(/[^0-9]/g, '')) || 0,
+                    male: parseInt(cols[IDX.MALE]?.replace(/[^0-9]/g, '')) || 0,
+                    female: parseInt(cols[IDX.FEMALE]?.replace(/[^0-9]/g, '')) || 0,
+                    ratio: parseFloat(cols[IDX.RATIO]) || 0
+                };
+
+                if (!rawData[year]) rawData[year] = [];
+                rawData[year].push(record);
+            });
+
+            populationData = rawData;
+            availableYears = Object.keys(populationData).sort((a, b) => a - b);
+
+            if (availableYears.length > 0) {
+                document.getElementById('welcome-msg').style.display = 'none';
+                const range = document.getElementById('year-range');
+                range.min = availableYears[0];
+                range.max = availableYears[availableYears.length - 1];
+                currentYear = parseInt(availableYears[0]);
+                range.value = currentYear;
+                
+                document.getElementById('year-labels').innerHTML = `<span>${availableYears[0]}</span><span>${availableYears[availableYears.length-1]}</span>`;
+                draw(currentYear);
+            } else {
+                alert("데이터 분석 실패: CSV 형식이 올바른지 확인해주세요.");
+            }
+        }
+
+        function draw(year) {
+            const dataList = populationData[year.toString()];
+            if (!dataList) return;
+
+            // 정렬: 인구수 기준 내림차순
+            const sortedData = [...dataList].sort((a, b) => b.pop - a.pop);
+            
+            // 통계 계산
+            const totalPop = sortedData.reduce((s, c) => s + c.pop, 0);
+            const totalHouse = sortedData.reduce((s, c) => s + c.house, 0);
+            const avgPop = totalPop / sortedData.length;
+            const maxRegion = sortedData[0];
+            const minRegion = sortedData[sortedData.length - 1];
+
+            // 1. 상단 통계 위젯 업데이트 (최댓값, 최솟값, 평균값)
+            document.getElementById('stat-max-name').innerText = maxRegion.name;
+            document.getElementById('stat-max-value').innerText = maxRegion.pop.toLocaleString() + " 명";
+            document.getElementById('stat-min-name').innerText = minRegion.name;
+            document.getElementById('stat-min-value').innerText = minRegion.pop.toLocaleString() + " 명";
+            document.getElementById('stat-avg-value').innerText = Math.floor(avgPop).toLocaleString() + " 명";
+
+            // 2. 사이드바 요약 업데이트
+            document.getElementById('year-display').innerText = year;
+            document.getElementById('sum-pop').innerText = totalPop.toLocaleString() + " 명";
+            document.getElementById('sum-house').innerText = totalHouse.toLocaleString() + " 세대";
+            document.getElementById('avg-sex').innerText = (sortedData.reduce((s, c) => s + c.ratio, 0) / sortedData.length).toFixed(2);
+
+            // 3. 캔버스 차트 그리기
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const margin = { top: 40, bottom: 85, left: 40, right: 40 };
+            const chartW = canvas.width - margin.left - margin.right;
+            const chartH = canvas.height - margin.top - margin.bottom;
+            const barSpacing = chartW / sortedData.length;
+            const barW = barSpacing * 0.75;
+            const maxVal = maxRegion.pop;
+
+            sortedData.forEach((d, i) => {
+                const h = (d.pop / maxVal) * chartH;
+                const x = margin.left + i * barSpacing + (barSpacing - barW) / 2;
+                const y = canvas.height - margin.bottom - h;
+
+                // 그림자 (네오 브루탈리즘 스타일)
+                ctx.fillStyle = '#000';
+                ctx.fillRect(x + 5, y + 5, barW, h);
+
+                // 바 본체 (1위 녹색, 하위권 분홍색)
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#000';
+                ctx.fillStyle = i === 0 ? '#4ADE80' : (i >= sortedData.length - 3 ? '#F472B6' : '#FFF');
+                ctx.fillRect(x, y, barW, h);
+                ctx.strokeRect(x, y, barW, h);
+
+                // 지역명 라벨링
+                ctx.save();
+                ctx.translate(x + barW / 2, canvas.height - margin.bottom + 15);
+                ctx.rotate(Math.PI / 4);
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 12px Pretendard';
+                ctx.textAlign = 'left';
+                ctx.fillText(d.name, 0, 0);
+                ctx.restore();
+
+                // 엠블럼 이미지 렌더링
+                if (imageCache[d.name]) {
+                    ctx.drawImage(imageCache[d.name], x + barW/2 - 12, canvas.height - margin.bottom + 45, 24, 16);
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x + barW/2 - 12, canvas.height - margin.bottom + 45, 24, 16);
+                }
+            });
+
+            // 4. 평균선 (파란 점선)
+            const avgY = canvas.height - margin.bottom - (avgPop / maxVal) * chartH;
+            ctx.setLineDash([10, 5]);
+            ctx.strokeStyle = '#3B82F6';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(margin.left, avgY);
+            ctx.lineTo(canvas.width - margin.right, avgY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            updateInsights(year, maxRegion, minRegion, avgPop);
+        }
+
+        function updateInsights(year, max, min, avg) {
+            const comment = document.getElementById('teacher-comment');
+            let text = `<span class='font-black'>${year}년 강원도 리포트:</span><br>가장 번화한 곳은 <span class='underline'>${max.name}</span>이며, `;
+            text += `인구 규모가 가장 작은 곳은 <span class='underline'>${min.name}</span>입니다. `;
+            text += `평균적으로 한 지역당 약 ${Math.floor(avg).toLocaleString()}명이 거주하고 있습니다. `;
+            comment.innerHTML = text;
+        }
+
+        // 재생/일시정지 제어
+        document.getElementById('play-btn').addEventListener('click', function() {
+            isPlaying = !isPlaying;
+            this.innerText = isPlaying ? '⏸' : '▶';
+            if (isPlaying) animate();
+            else clearTimeout(animationTimer);
+        });
+
+        function animate() {
+            if (!isPlaying) return;
+            const maxYear = parseInt(availableYears[availableYears.length - 1]);
+            if (currentYear >= maxYear) currentYear = parseInt(availableYears[0]);
+            else currentYear++;
+            
+            document.getElementById('year-range').value = currentYear;
+            draw(currentYear);
+            
+            const speed = 1600 - document.getElementById('speed-range').value;
+            animationTimer = setTimeout(animate, speed);
+        }
+
+        document.getElementById('year-range').addEventListener('input', function(e) {
+            currentYear = parseInt(e.target.value);
+            draw(currentYear);
+        });
+
+        function handleResize() {
+            const container = document.getElementById('container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            if (availableYears.length) draw(currentYear);
+        }
+
+        window.addEventListener('resize', handleResize);
+        window.onload = () => {
+            handleResize();
+            preloadImages();
+        };
+    </script>
+</body>
+</html>
