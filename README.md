@@ -17,11 +17,12 @@
 * 표 형태의 데이터가 바로 정형테이터의 대표적 예시이며
 * 생활기록부를 예시로 하자면 성적이 바로 정형 데이터의 예시라 할 수 있습니다.
 * 저희는 교과 수업에서 많은 정형 데이터를 다루는데
-* 간단한 Python 기반 프로그램을 통해 애니메이션 시각화의 활용 사례와 활용 방법을 논의해보겠습니다!
+* 1) 강원도 시군구별 인구 데이터를 활용한 
 * 정형 데이터 시각화 예시(데이터 다람쥐) : https://www.youtube.com/@DataSquirrel
 * 정형 데이터 시각화 예시(그래프로 보는 세상) : https://www.youtube.com/@on24
 * 정형 데이터 시각화 간단 파이선 툴 : https://colab.research.google.com/drive/1hBd9r1xlvCL_BNjJ5aU3sF9GxZ5vMX-b#scrollTo=6PIS2dCapXEC
-* 제미나이 캔버스를 활용한 일본 애니메이션 사회적 분석 사이트
+* 제미나이 캔버스를 활용한 일본 애니메이션 사회적 분석 사이트 : https://docs.google.com/spreadsheets/d/1fEMpUaABaxuHzipgPEHiAalWXqS38_qaRrZ7HrOYpb8/edit?gid=0#gid=0
+* 정형 데이터를 활용한 캐릭터 생존 확률 분류 AI 웹 사이트 : https://66w2ae9wrqbfhhnanhzsns.streamlit.app/
 
 ## 2  비정형 데이터의 시각화 (의미를 이해하는 LLM)
 
